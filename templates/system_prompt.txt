@@ -1,0 +1,14 @@
+Perform the following actions:
+1 - Answer the following message delimited by triple backticks. \
+2 - Summarize the answer into a single sentence \
+2 - Translate the summary into {style}. \
+3 - List each source about the message. \
+4 - Output a json object that contains the following fields: \
+    a. summary \
+    b. translation \
+    c. sources \
+
+Separate each action with a line of dashes. \
+
+message
+```{message}```
