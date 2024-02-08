@@ -1,4 +1,4 @@
-from src.main.lab import send_single_human_message, send_human_message_prompt_template, \
+from lab import send_single_human_message, send_human_message_prompt_template, \
     send_multi_message_prompt_template, send_prompt_with_chat_memory
 
 

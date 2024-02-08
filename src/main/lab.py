@@ -6,10 +6,11 @@ from langchain.memory import ConversationBufferMemory
 from langchain_community.llms.huggingface_endpoint import HuggingFaceEndpoint
 from langchain_community.chat_models.huggingface import ChatHuggingFace
 from langchain_core.messages import BaseMessage, HumanMessage
-from langchain_core.prompts import HumanMessagePromptTemplate, SystemMessagePromptTemplate, ChatPromptTemplate
+from langchain_core.prompts import HumanMessagePromptTemplate, SystemMessagePromptTemplate, ChatPromptTemplate, MessagesPlaceholder
 
 llm = HuggingFaceEndpoint(
     endpoint_url=os.environ['LLM_ENDPOINT'],
+     huggingfacehub_api_token = os.environ['HF_TOKEN'],
     task="text2text-generation",
     model_kwargs={
         "max_new_tokens": 200
@@ -39,9 +40,10 @@ def send_single_human_message(message) -> BaseMessage:
     End TODO
     """
     # Write Code Below
-
+    human_message = HumanMessage(content=message)
+    
     # Replace with return statement
-    raise NotImplementedError("This function has not been implemented yet.")
+    return chat_model.invoke([human_message])
 
 
 def send_human_message_prompt_template(message) -> BaseMessage:
@@ -65,9 +67,9 @@ def send_human_message_prompt_template(message) -> BaseMessage:
     End TODO
     """
     # Write Code Below
-
-    # Replace with return statement
-    raise NotImplementedError("This function has not been implemented yet.")
+    human_message_prompt = HumanMessagePromptTemplate.from_template(message)
+    
+    return chat_model.invoke(human_message_prompt.format_messages())
 
 
 def send_multi_message_prompt_template(style, message) -> BaseMessage:
@@ -101,9 +103,17 @@ def send_multi_message_prompt_template(style, message) -> BaseMessage:
     End TODO
     """
     # Write Code Below
+    human_message_prompt = HumanMessagePromptTemplate.from_template(message)
+    
+    f = open("./templates/system_prompt.txt", "r")
+    system_prompt = f.read()
+    f.close()
+    system_message_prompt = SystemMessagePromptTemplate.from_template(system_prompt)
+
+    chat_prompt = ChatPromptTemplate.from_messages([system_message_prompt, human_message_prompt])
 
     # Replace with return statement
-    raise NotImplementedError("This function has not been implemented yet.")
+    return chat_model.invoke(chat_prompt.format_messages(message=message, style=style))
 
 
 def send_prompt_with_chat_memory(style, message) -> List[BaseMessage]:
@@ -138,6 +148,22 @@ def send_prompt_with_chat_memory(style, message) -> List[BaseMessage]:
     End TODO
     """
     # Write Code Below
+    system_prompt = SystemMessagePromptTemplate.from_template(system_ai_template)
+    chat_prompt = ChatPromptTemplate.from_messages(
+                    [
+                        system_prompt, 
+                        MessagesPlaceholder(variable_name="chat_history"),
+                        HumanMessagePromptTemplate.from_template("{input}")
+                    ])
+
+    conversation_buf = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
+    
+    conversation_chain = ConversationChain(prompt=chat_prompt, llm=chat_model, memory=conversation_buf)
+
+    conversation_chain.predict(input=message)
+    conversation_chain.predict(input=message2)
+    conversation_chain.predict(input=message3)
+
 
     # Replace with return statement
-    raise NotImplementedError("This function has not been implemented yet.")
+    return conversation_buf.buffer_as_messages
